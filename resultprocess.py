@@ -7,9 +7,9 @@ f = open(file_path, "r")
 contents = f.read()
 f.close()
 l = contents.split('\n\n')
-transfer_times = 10
+# transfer_times = 10
 number_of_record = 6
-rfoxy = transfer_times * number_of_record
+# rfoxy = transfer_times * number_of_record
 
 print(len(l))
 
@@ -18,14 +18,14 @@ counter = 0
 tmpList = []
 tmpTuple = ()
 
-for x in range(len(l)-1):
-    z = x % 6
-    c = x // 6
-    print('x:' + str(x))
+for x in range(len(l) - 1):
+    z = x % number_of_record
+    c = x // number_of_record
+    # print('x:' + str(x))
     if c == counter:
         data = l[x].split(':')
         tmpList.append(data[1])
-        if z == 5:
+        if z == number_of_record - 1:
             counter = counter + 1
             tmpTuple = tuple(tmpList)
             output.append(tmpTuple)
