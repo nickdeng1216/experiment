@@ -22,12 +22,8 @@ process_file_path = 'C:' + os.sep + 'share' + os.sep + 'workspace' + os.sep + 'I
 @app.route('/', methods=['POST'])
 def main():
     start_time = datetime.datetime.now()
-    f = open("log.txt", "a+")
     raw_content = request.get_data().decode('utf-8')
     content = json.loads(raw_content)
-    counter = content['counter']
-    # s1 = counter + ' starts at: ' + start_time.strftime('%Y-%m-%d, %H:%M:%S.%f')
-    # print(s1)
     password = content['password']
     file_name = content['file_name']
     repeat_times = int(content['repeat_times'])
@@ -36,19 +32,14 @@ def main():
     return_file_name = content['return_file_name']
     data = get_file_content(return_file_name)
     end_time = datetime.datetime.now()
-    # s2 = counter + ' end at: ' + end_time.strftime('%Y-%m-%d, %H:%M:%S.%f')
-    # print(s2)
     delta_microseconds = (end_time - start_time).microseconds
     delta_seconds = (end_time - start_time).seconds
     process_time = delta_seconds + delta_microseconds * (10 ** (-6))
     process_time_ms = delta_seconds * 1000 + delta_microseconds * (10 ** (-3))
 
     return_value = '{"data":"' + data + '", "process_time":"' + str(process_time) + '"}'
-    s1 = 'transfer_times:' + counter
-    s2 = 'return_file_size:' + return_file_name
-    s3 = 'process_time:' + str(process_time_ms)
-    print(s3)
-    f.write('file_name:' + file_name + '\r\n' + s1 + '\r\n' + s2 + '\r\n' + s3 + '\r\n')
+    s = 'current_process_time:' + str(process_time_ms)
+    print(s)
     return return_value
 
 
@@ -59,17 +50,36 @@ def get_file_content(file_name):
     return data
 
 
-@app.route('/total_time', methods=['POST'])
-def total_time():
+@app.route('/save_result', methods=['POST'])
+def save_result():
     raw_content = request.get_data().decode('utf-8')
     content = json.loads(raw_content)
+    execution_times = content['execution_times']
+    process_times = content['process_times']
+    process_file_size = content['process_file_size']
+    return_file_name = content['return_file_name']
+    current_execution_times = content['current_execution_times']
+    current_operation_times = content['current_operation_times']
+    server_completed = content['server_completed']
+    client_completed = content['client_completed']
     current_total_time = content['current_total_time']
     total_time = content['total_time']
+    current_round = content['current_round']
+    total_round = content['total_round']
     f = open("log.txt", "a+")
-    f.write('current_total_time:' + current_total_time + '\r\n')
-    f.write('total_time:' + total_time + '\r\n')
-    print(raw_content)
-    # f.close()
+    f.write('execution_times:' + execution_times + '\n')
+    f.write('process_times:' + process_times + '\n')
+    f.write('process_file_size:' + process_file_size + '\n')
+    f.write('return_file_name:' + return_file_name + '\n')
+    f.write('current_execution_times:' + current_execution_times + '\n')
+    f.write('current_operation_times:' + current_operation_times + '\n')
+    f.write('server_completed:' + server_completed + '\n')
+    f.write('client_completed:' + client_completed + '\n')
+    f.write('current_total_time:' + current_total_time + '\n')
+    f.write('total_time:' + total_time + '\n')
+    f.write('current_round:' + current_round + '\n')
+    f.write('total_round:' + total_round + '\n')
+    print('total_time:' + total_time)
     return "ok"
 
 
