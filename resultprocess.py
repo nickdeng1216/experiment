@@ -89,86 +89,80 @@ def draw_graph(l_title_key, l_title_value, l_fixed_values, l_line_key, l_line_va
         plt.show()
 
 
+def draw():
+    plt.figure(figsize=(6.4, 4.8))
+    # counter = 0
+    value_key = 'total_time'
+    value_value = 'Total time(s)'
+    # fixed return_file_size
+    # x axis is execution_times
+    # line is process_times
+    title_key = 'return_file_size'
+    title_value = 'Return file size'
+    fixed_values = df_mean.return_file_size.unique()
+    x_axis_key = 'execution_times'
+    x_axis_value = 'Execution times'
+    line_key = 'process_times'
+    line_value = 'process times'
+    column_values = sorted(df_mean.process_times.unique().tolist())
+    draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
+               value_value, column_values)
+    # x axis is process_times
+    # line is execution_times
+    line_key = 'execution_times'
+    line_value = 'execution times'
+    x_axis_key = 'process_times'
+    x_axis_value = 'Process times'
+    column_values = sorted(df_mean.execution_times.unique().tolist())
+    draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
+               value_value, column_values)
+    # fixed execution_times
+    # x axis is return_file_size
+    # line is process_times
+    title_key = 'execution_times'
+    title_value = 'Execution times'
+    fixed_values = df_mean.execution_times.unique()
+    x_axis_key = 'return_file_size'
+    x_axis_value = 'Return file size'
+    line_key = 'process_times'
+    line_value = 'Process times'
+    column_values = sorted(df_mean.process_times.unique().tolist())
+    draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
+               value_value, column_values)
+    # x axis is process_times
+    # line is return_file_size
+    line_key = 'return_file_size'
+    line_value = 'return file size'
+    x_axis_key = 'process_times'
+    x_axis_value = 'Process times'
+    column_values = sorted(df_mean.return_file_size.unique().tolist())
+    draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
+               value_value, column_values)
+    # fixed process_times
+    # x axis is return_file_size
+    # line is execution_times
+    title_key = 'process_times'
+    title_value = 'Process times'
+    fixed_values = df_mean.process_times.unique()
+    x_axis_key = 'return_file_size'
+    x_axis_value = 'Return file size'
+    line_key = 'execution_times'
+    line_value = 'execution times'
+    column_values = sorted(df_mean.process_times.unique().tolist())
+    print('column_values is {0}'.format(column_values))
+    draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
+               value_value, column_values)
+    # x axis is execution_times
+    # line is return_file_size
+    line_key = 'return_file_size'
+    line_value = 'return file size'
+    x_axis_key = 'execution_times'
+    x_axis_value = 'Execution times'
+    column_values = sorted(df_mean.return_file_size.unique().tolist())
+    draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
+               value_value, column_values)
+
+
 sum_experiment_result()
 mean_experiment_result()
-
-# conditions = [{'execution_times': 'Execution times(s)'}, {'process_times': 'Process_times'},
-#               {'return_file_size': 'Return file size'}]
-
-
-plt.figure(figsize=(6.4, 4.8))
-# counter = 0
-
-value_key = 'total_time'
-value_value = 'Total time(s)'
-
-# fixed return_file_size
-# x axis is execution_times
-# line is process_times
-title_key = 'return_file_size'
-title_value = 'Return file size'
-fixed_values = df_mean.return_file_size.unique()
-x_axis_key = 'execution_times'
-x_axis_value = 'Execution times'
-line_key = 'process_times'
-line_value = 'process times'
-column_values = sorted(df_mean.process_times.unique().tolist())
-draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-           value_value, column_values)
-# x axis is process_times
-# line is execution_times
-line_key = 'execution_times'
-line_value = 'execution times'
-x_axis_key = 'process_times'
-x_axis_value = 'Process times'
-column_values = sorted(df_mean.execution_times.unique().tolist())
-draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-           value_value, column_values)
-
-# fixed execution_times
-# x axis is return_file_size
-# line is process_times
-title_key = 'execution_times'
-title_value = 'Execution times'
-fixed_values = df_mean.execution_times.unique()
-x_axis_key = 'return_file_size'
-x_axis_value = 'Return file size'
-line_key = 'process_times'
-line_value = 'Process times'
-column_values = sorted(df_mean.process_times.unique().tolist())
-draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-           value_value, column_values)
-# x axis is process_times
-# line is return_file_size
-line_key = 'return_file_size'
-line_value = 'return file size'
-x_axis_key = 'process_times'
-x_axis_value = 'Process times'
-column_values = sorted(df_mean.return_file_size.unique().tolist())
-draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-           value_value, column_values)
-
-# fixed process_times
-# x axis is return_file_size
-# line is execution_times
-title_key = 'process_times'
-title_value = 'Process times'
-fixed_values = df_mean.process_times.unique()
-x_axis_key = 'return_file_size'
-x_axis_value = 'Return file size'
-line_key = 'execution_times'
-line_value = 'execution times'
-column_values = sorted(df_mean.process_times.unique().tolist())
-print('column_values is {0}'.format(column_values))
-draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-           value_value, column_values)
-# x axis is execution_times
-# line is return_file_size
-line_key = 'return_file_size'
-line_value = 'return file size'
-x_axis_key = 'execution_times'
-x_axis_value = 'Execution times'
-
-column_values = sorted(df_mean.return_file_size.unique().tolist())
-draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-           value_value, column_values)
+draw()
