@@ -66,7 +66,6 @@ def mean_experiment_result():
 def draw_graph(l_title_key, l_title_value, l_fixed_values, l_line_key, l_line_value, l_x_axis_key, l_x_axis_value,
                l_value_key,
                l_value_value, l_column_values):
-    # global counter
     for y in range(len(l_fixed_values)):
         # print('the {0} round, l_line_value={1}, l_title_value={2}'.format(counter, l_line_value, l_title_value))
         print('The line represents the trends of time cost in different {0}. {1} is {2}'.format(str(l_line_value), str(
@@ -75,20 +74,15 @@ def draw_graph(l_title_key, l_title_value, l_fixed_values, l_line_key, l_line_va
             'The line represents the trends of different {0}\n{1} is set to fixed at {2}'.format(str(l_line_value), str(
                 l_title_value), str(l_fixed_values[y])))
         df_process = df_mean[df_mean[l_title_key] == l_fixed_values[y]]
-        # df_process['return_file_size'] = df_process['return_file_size'].map(lambda x: str(x) + 'K')
         df_pivot = pd.pivot_table(df_process, index=[l_x_axis_key], columns=[l_line_key],
                                   values=[l_value_key],
                                   aggfunc='sum')
-        # print('index={0}, columns={1}, values={2}'.format(l_x_axis_key, l_line_key, l_value_key))
         print(df_pivot.values)
         print(df_pivot.axes)
-        # print(type(df_pivot.axes))
-        # print(l_column_values)
         plt.ylabel(l_value_value)
         plt.xlabel(l_x_axis_value)
         line = plt.plot(df_pivot, '-o')
         plt.legend(handles=line, labels=l_column_values, loc='best')
-        # plt.tight_layout(.5)
         plt.savefig(output_directory + l_title_key + '_' + str(l_fixed_values[
                                                                    y]) + '_' + 'x_axis_' + str(
             l_x_axis_key) + '_line_' + str(l_line_key) + '.png')
