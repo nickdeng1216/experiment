@@ -18,7 +18,7 @@ output_path = output_directory + 'sum' + re.sub('[^a-zA-Z0-9]', '', str(timestam
 final_result_path = output_directory + 'mean' + re.sub('[^a-zA-Z0-9]', '', str(timestamp)) + '.csv'
 
 
-def sum_experiment_result():
+def process_experiment_result():
     f = open(file_path, "r")
     contents = f.read()
     f.close()
@@ -57,6 +57,16 @@ def mean_experiment_result():
                      dtype={'execution_times': int, 'process_times': int,
                             'return_file_size': str, 'total_time': float},
                      )
+    for i in range(10):
+        max_data = df.groupby(['execution_times', 'process_times', 'return_file_size'])['total_time'].transform(max) == df[
+            'total_time']
+        idx = df[max_data].index
+        df.drop(idx, inplace=True)
+    for i in range(5):
+        max_data = df.groupby(['execution_times', 'process_times', 'return_file_size'])['total_time'].transform(min) == df[
+            'total_time']
+        idx = df[max_data].index
+        df.drop(idx, inplace=True)
     gd = df.groupby(['execution_times', 'process_times', 'return_file_size'])
     gd.aggregate(np.mean).to_csv(final_result_path)
     df_mean = pd.read_csv(final_result_path)
@@ -163,6 +173,6 @@ def draw():
                value_value, column_values)
 
 
-sum_experiment_result()
+process_experiment_result()
 mean_experiment_result()
 draw()
