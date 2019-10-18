@@ -54,6 +54,7 @@ def get_file_content(file_name):
 def save_result():
     raw_content = request.get_data().decode('utf-8')
     content = json.loads(raw_content)
+    loop_times = content['repeat_times']
     execution_times = content['execution_times']
     process_times = content['process_times']
     process_file_size = content['process_file_size']
@@ -67,16 +68,17 @@ def save_result():
     current_round = content['current_round']
     total_round = content['total_round']
     f = open("log.txt", "a+")
+    f.write('repeat_times:' + loop_times + '\n')
     f.write('execution_times:' + execution_times + '\n')
     f.write('process_times:' + process_times + '\n')
-    f.write('process_file_size:' + process_file_size + '\n')
     f.write('return_file_name:' + return_file_name + '\n')
+    f.write('total_time:' + total_time + '\n')
+    f.write('process_file_size:' + process_file_size + '\n')
     f.write('current_execution_times:' + current_execution_times + '\n')
     f.write('current_operation_times:' + current_operation_times + '\n')
     f.write('server_completed:' + server_completed + '\n')
     f.write('client_completed:' + client_completed + '\n')
     f.write('current_total_time:' + current_total_time + '\n')
-    f.write('total_time:' + total_time + '\n')
     f.write('current_round:' + current_round + '\n')
     f.write('total_round:' + total_round + '\n')
     print('total_time:' + total_time)
