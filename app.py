@@ -63,6 +63,7 @@ def save_result():
     current_operation_times = content['current_operation_times']
     server_completed = content['server_completed']
     client_completed = content['client_completed']
+    current_process_time = content['current_process_time']
     current_total_time = content['current_total_time']
     total_time = content['total_time']
     current_round = content['current_round']
@@ -78,7 +79,8 @@ def save_result():
     f.write('current_operation_times:' + current_operation_times + '\n')
     f.write('server_completed:' + server_completed + '\n')
     f.write('client_completed:' + client_completed + '\n')
-    f.write('current_total_time:' + current_total_time + '\n')
+    f.write('current_process_time:' + current_process_time + '\n')
+    f.write('current_total_time:' + str(float(current_total_time) / 1000) + '\n')
     f.write('current_round:' + current_round + '\n')
     f.write('total_round:' + total_round + '\n')
     print('total_time:' + total_time)
