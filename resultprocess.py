@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import os
+import copy
 
 directory = os.getcwd() + os.sep
 output_directory = directory + 'output' + os.sep
@@ -16,7 +17,8 @@ file_path = 'log.txt'
 timestamp = re.sub('[^a-zA-Z0-9]', '', str(datetime.now()))
 interaction_path = output_directory + 'interaction' + timestamp + '.csv'
 operation_path = output_directory + 'operation' + timestamp + '.csv'
-final_result_path = output_directory + 'mean' + timestamp + '.csv'
+mean_file_path = output_directory + 'mean' + timestamp + '.csv'
+final_result_path = output_directory + 'final' + timestamp + '.csv'
 
 
 def process_experiment_result():
@@ -75,12 +77,15 @@ def mean_experiment_result():
                             'total_time': float}, )
     df.columns = ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server',
                   'return_file_size', 'process_time_in_server', 'total_time']
-    # for i in range(10):
-    #     max_data = df.groupby(
-    #         ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server', 'return_file_size'])[
-    #                    'total_time'].transform(max) == df['total_time']
-    #     idx = df[max_data].index
-    #     df.drop(idx, inplace=True)
+    # df = df[['no_of_iterations_in_mobile', 'no_of_iterations_in_server', 'return_file_size', 'no_of_interactions',
+    #          'process_time_in_server', 'total_time']]
+    print(df.columns.values)
+    for i in range(10):
+        max_data = df.groupby(
+            ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server', 'return_file_size'])[
+                       'total_time'].transform(max) == df['total_time']
+        idx = df[max_data].index
+        df.drop(idx, inplace=True)
     # for i in range(5):
     #     max_data = df.groupby(
     #         ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server', 'return_file_size'])[
@@ -89,219 +94,99 @@ def mean_experiment_result():
     #     df.drop(idx, inplace=True)
     # print(df.columns.values)
     gd = df.groupby(
-        ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server', 'return_file_size'])
+        ['no_of_iterations_in_mobile', 'no_of_iterations_in_server', 'return_file_size', 'no_of_interactions'])
     df_mean = gd.aggregate(np.mean)
     df_mean['total_time'] = df_mean['total_time'].map(lambda x: '%.2f' % (x / 1000))
     df_mean['process_time_in_server'] = df_mean['process_time_in_server'].map(lambda x: '%.2f' % x)
-    # df_mean.columns = ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server',
-    #                    'return_file_size', 'total_time']
-    df_mean.to_csv(final_result_path)
+    df_count = df.groupby(['no_of_iterations_in_mobile', 'no_of_iterations_in_server',
+                           'return_file_size', 'no_of_interactions']).count()
+    df_count.drop('process_time_in_server', axis=1, inplace=True)
+    df_merge = pd.merge(df_mean, df_count, how='inner',
+                        on=['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server',
+                            'return_file_size'])
+    print(df_merge.columns.values)
+    df_merge.to_csv(mean_file_path)
+    df_final = pd.read_csv(mean_file_path)
+    df_final.to_csv(final_result_path, columns=['no_of_iterations_in_mobile', 'no_of_iterations_in_server',
+                                                'return_file_size', 'no_of_interactions', 'total_time_x'])
 
 
-# value_key = 'total_time'
-# value_value = 'Total time(s)'
-# # fixed return_file_size
-# # x axis is execution_times
-# # line is process_times
-# title_key = 'return_file_size'
-# title_value = 'Return file size'
-# fixed_values = df_mean.return_file_size.unique()
-# x_axis_key = 'execution_times'
-# x_axis_value = 'Execution times'
-# line_key = 'process_times'
-# line_value = 'process times'
-# column_values = sorted(df_mean.process_times.unique().tolist())
+def start_draw():
+    # df = pd.read_csv(output_directory + 'mean20191030070435832402.csv', usecols=[0, 1, 2, 3, 5])
+    df = pd.read_csv(final_result_path, usecols=[1, 2, 3, 4, 5])
+    print(df.columns.values)
+    fields = [['no_of_iterations_in_mobile', 'number of iterations in mobile', [1, 10, 15, 25]],
+              ['no_of_iterations_in_server', 'number of iterations in server', [1, 10, 15, 20]],
+              ['return_file_size', 'return file size', [100, 500, 1000, 2000]],
+              ['no_of_interactions', 'number of interactions', [1, 10, 25, 50]],
+              ['total_time', 'time used']]
+    df.columns = [fields[0][0], fields[1][0], fields[2][0], fields[3][0], fields[4][0]]
+    values = [fields[4][0], fields[4][1]]  # ['total_time', 'time used']
+    filter_list = []
+    full_collection = [0, 1, 2, 3]
+    limit = 4
+    for i in range(limit):
+        c = i
+        flt = []
+        c = c + 1
+        while c < limit:
+            flt = [i, c]
+            c = c + 1
+            if not all(elem in filter_list for elem in flt):
+                filter_list.append(flt)
+
+    final_filter_list = []
+    for x in range(len(filter_list)):
+        l1 = filter_list[x]
+        l2 = list(set(full_collection) - set(l1))
+        final_filter_list.append(l1 + l2)
+        l2.reverse()
+        final_filter_list.append(l1 + l2)
+
+    for i in range(len(final_filter_list)):
+        filter0_index = final_filter_list[i][0]
+        filter1_index = final_filter_list[i][1]
+        axis_index = final_filter_list[i][2]
+        legend_index = final_filter_list[i][3]
+        filters = [fields[filter0_index], fields[filter1_index]]
+        # print('filters:{0}'.format(str(filters)))
+        filter0_values = fields[filter0_index][2]  # df.no_of_iterations_in_mobile.unique().tolist()
+        filter1_values = fields[filter1_index][2]  # df.no_of_iterations_in_server.unique().tolist()
+        axis = [fields[axis_index][0], fields[axis_index][1]]
+        legend = [fields[legend_index][0], fields[legend_index][1], fields[legend_index][2]]
+        # print('axis={0}, filter0_values={1}, filter1_values={2},\n filters={3}\n, legend={4}, values={5}'.format(
+        #     str(axis), str(filter0_values), str(filter1_values), str(filters), str(legend), str(values)))
+        draw_graph(axis, df, filter0_values, filter1_values, filters, legend, values)
 
 
-# draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#            value_value, column_values)
-
-# filters is a list contains filter dictionaries.
-# axis is a dictionary.
-# legends is a list contains legend dictionaries.
-# value is a dictionary
-# df is the mean dataframe
-# def draw_graph(filters, l_title_value, l_fixed_values, l_line_key, l_line_value, l_x_axis_key, l_x_axis_value,
-#                l_value_key, l_value_value, l_column_values):
-# def draw_graph(df, filters, axis, legends, value):
-#     for x in range(len(filters)):
-#         for k in filters[x].keys():
-#
-#     for y in range(len(l_fixed_values)):
-#         # print('the {0} round, l_line_value={1}, l_title_value={2}'.format(counter, l_line_value, l_title_value))
-#         print('The line represents the trends of time cost in different {0}. {1} is {2}'.format(str(l_line_value), str(
-#             l_title_value), str(l_fixed_values[y])))
-#         plt.title(
-#             'The line represents the trends of different {0}\n{1} is set to fixed at {2}'.format(str(l_line_value), str(
-#                 l_title_value), str(l_fixed_values[y])))
-#         df_process = df[df[filters] == l_fixed_values[y]]
-#         df_pivot = pd.pivot_table(df_process, index=[l_x_axis_key], columns=[l_line_key],
-#                                   values=[l_value_key],
-#                                   aggfunc='sum')
-#         print(df_pivot.values)
-#         print(df_pivot.axes)
-#         plt.ylabel(l_value_value)
-#         plt.xlabel(l_x_axis_value)
-#         line = plt.plot(df_pivot, '-o')
-#         plt.legend(handles=line, labels=l_column_values, loc='best')
-#         plt.savefig(output_directory + filters + '_' + str(l_fixed_values[
-#                                                                y]) + '_' + 'x_axis_' + str(
-#             l_x_axis_key) + '_line_' + str(l_line_key) + '.png')
-#         plt.show()
+def draw(df, filters, axis, legend, values):
+    # print(filters)
+    plt.figure(figsize=(8, 6))
+    plt.title(
+        'The legend is the {0}.\nTwo filters are the {1}({2}) and the {3}({4}).'.format(
+            str(legend[1]), str(filters[0][1]), str(filters[0][2]), str(filters[1][1]), str(filters[1][2])))
+    df_process = df[df[filters[0][0]] == int(filters[0][2])]
+    df_process = df_process[df_process[filters[1][0]] == int(filters[1][2])]
+    df_pivot = pd.pivot_table(df_process, index=[axis[0]], columns=[legend[0]],
+                              values=[values[0]], aggfunc='sum')
+    plt.ylabel(values[1])
+    plt.xlabel(axis[1])
+    line = plt.plot(df_pivot, '-o')
+    plt.legend(handles=line, labels=legend[2], loc='best')
+    plt.savefig(output_directory + filters[0][0] + '_' + str(filters[0][2]) + '_' + filters[1][0] + '_' + str(
+        filters[1][2]) + '_' + 'axis_' + str(axis[0]) + '_legend_' + str(legend[0]) + '.png')
+    plt.show()
 
 
-# three conditions
-# def draw():
-#     plt.figure(figsize=(6.4, 4.8))
-#     # counter = 0
-#     value_key = 'total_time'
-#     value_value = 'Total time(s)'
-#     # fixed return_file_size
-#     # x axis is execution_times
-#     # line is process_times
-#     title_key = 'return_file_size'
-#     title_value = 'Return file size'
-#     fixed_values = df_mean.return_file_size.unique()
-#     x_axis_key = 'execution_times'
-#     x_axis_value = 'Execution times'
-#     line_key = 'process_times'
-#     line_value = 'process times'
-#     column_values = sorted(df_mean.process_times.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # x axis is process_times
-#     # line is execution_times
-#     line_key = 'execution_times'
-#     line_value = 'execution times'
-#     x_axis_key = 'process_times'
-#     x_axis_value = 'Process times'
-#     column_values = sorted(df_mean.execution_times.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # fixed execution_times
-#     # x axis is return_file_size
-#     # line is process_times
-#     title_key = 'execution_times'
-#     title_value = 'Execution times'
-#     fixed_values = df_mean.execution_times.unique()
-#     x_axis_key = 'return_file_size'
-#     x_axis_value = 'Return file size'
-#     line_key = 'process_times'
-#     line_value = 'Process times'
-#     column_values = sorted(df_mean.process_times.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # x axis is process_times
-#     # line is return_file_size
-#     line_key = 'return_file_size'
-#     line_value = 'return file size'
-#     x_axis_key = 'process_times'
-#     x_axis_value = 'Process times'
-#     column_values = sorted(df_mean.return_file_size.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # fixed process_times
-#     # x axis is return_file_size
-#     # line is execution_times
-#     title_key = 'process_times'
-#     title_value = 'Process times'
-#     fixed_values = df_mean.process_times.unique()
-#     x_axis_key = 'return_file_size'
-#     x_axis_value = 'Return file size'
-#     line_key = 'execution_times'
-#     line_value = 'execution times'
-#     column_values = sorted(df_mean.process_times.unique().tolist())
-#     print('column_values is {0}'.format(column_values))
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # x axis is execution_times
-#     # line is return_file_size
-#     line_key = 'return_file_size'
-#     line_value = 'return file size'
-#     x_axis_key = 'execution_times'
-#     x_axis_value = 'Execution times'
-#     column_values = sorted(df_mean.return_file_size.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-
-
-# four conditions
-# def draw():
-#     plt.figure(figsize=(6.4, 4.8))
-#     # counter = 0
-#     value_key = 'total_time'
-#     value_value = 'Total time(s)'
-#     # fixed return_file_size
-#     # x axis is execution_times
-#     # line is process_times
-#     title_key = 'return_file_size'
-#     title_value = 'Return file size'
-#     fixed_values = df_mean.return_file_size.unique()
-#     x_axis_key = 'execution_times'
-#     x_axis_value = 'Execution times'
-#     line_key = 'process_times'
-#     line_value = 'process times'
-#     column_values = sorted(df_mean.process_times.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # x axis is process_times
-#     # line is execution_times
-#     line_key = 'execution_times'
-#     line_value = 'execution times'
-#     x_axis_key = 'process_times'
-#     x_axis_value = 'Process times'
-#     column_values = sorted(df_mean.execution_times.unique().tolist())
-#     # l_title_key, l_title_value, l_fixed_values, l_line_key, l_line_value, l_x_axis_key, l_x_axis_value,
-#     # l_value_key, l_value_value, l_column_values
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # fixed execution_times
-#     # x axis is return_file_size
-#     # line is process_times
-#     title_key = 'execution_times'
-#     title_value = 'Execution times'
-#     fixed_values = df_mean.execution_times.unique()
-#     x_axis_key = 'return_file_size'
-#     x_axis_value = 'Return file size'
-#     line_key = 'process_times'
-#     line_value = 'Process times'
-#     column_values = sorted(df_mean.process_times.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # x axis is process_times
-#     # line is return_file_size
-#     line_key = 'return_file_size'
-#     line_value = 'return file size'
-#     x_axis_key = 'process_times'
-#     x_axis_value = 'Process times'
-#     column_values = sorted(df_mean.return_file_size.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # fixed process_times
-#     # x axis is return_file_size
-#     # line is execution_times
-#     title_key = 'process_times'
-#     title_value = 'Process times'
-#     fixed_values = df_mean.process_times.unique()
-#     x_axis_key = 'return_file_size'
-#     x_axis_value = 'Return file size'
-#     line_key = 'execution_times'
-#     line_value = 'execution times'
-#     column_values = sorted(df_mean.process_times.unique().tolist())
-#     print('column_values is {0}'.format(column_values))
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
-#     # x axis is execution_times
-#     # line is return_file_size
-#     line_key = 'return_file_size'
-#     line_value = 'return file size'
-#     x_axis_key = 'execution_times'
-#     x_axis_value = 'Execution times'
-#     column_values = sorted(df_mean.return_file_size.unique().tolist())
-#     draw_graph(title_key, title_value, fixed_values, line_key, line_value, x_axis_key, x_axis_value, value_key,
-#                value_value, column_values)
+def draw_graph(axis, df, filter0_values, filter1_values, filters, legend, values):
+    process_filters = copy.deepcopy(filters)
+    for x in range(len(filter0_values)):
+        for y in range(len(filter1_values)):
+            process_filters[0][2] = filter0_values[x]
+            process_filters[1][2] = filter1_values[y]
+            draw(df, process_filters, axis, legend, values)
 
 
 process_experiment_result()
 mean_experiment_result()
-# draw()
+start_draw()
