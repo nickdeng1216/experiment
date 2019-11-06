@@ -19,6 +19,14 @@ interaction_path = output_directory + 'interaction' + timestamp + '.csv'
 operation_path = output_directory + 'operation' + timestamp + '.csv'
 mean_file_path = output_directory + 'mean' + timestamp + '.csv'
 final_result_path = output_directory + 'final' + timestamp + '.csv'
+mixed = True
+graph = 'bar_chart'
+
+
+# mixed = False
+
+
+# graph = 'line_graph'
 
 
 def process_experiment_result():
@@ -77,9 +85,6 @@ def mean_experiment_result():
                             'total_time': float}, )
     df.columns = ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server',
                   'return_file_size', 'process_time_in_server', 'total_time']
-    # df = df[['no_of_iterations_in_mobile', 'no_of_iterations_in_server', 'return_file_size', 'no_of_interactions',
-    #          'process_time_in_server', 'total_time']]
-    # print(df.columns.values)
     for i in range(10):
         max_data = df.groupby(
             ['no_of_iterations_in_mobile', 'no_of_interactions', 'no_of_iterations_in_server', 'return_file_size'])[
@@ -111,18 +116,88 @@ def mean_experiment_result():
                                                 'return_file_size', 'no_of_interactions', 'total_time_x'])
 
 
+def draw(df, filters, axis, legend, values):
+    df_process = df[df[filters[0][0]] == int(filters[0][2])]
+    df_process = df_process[df_process[filters[1][0]] == int(filters[1][2])]
+    df_pivot = pd.pivot_table(df_process, index=[axis[0]], columns=[legend[0], 'cloud'],
+                              values=[values[0]], aggfunc='sum')
+    # print(df_pivot)
+    converted_legend = []
+    for i in range(len(legend[2])):
+        converted_legend.append(str(legend[2][i]) + '-hk')
+        if mixed:
+            converted_legend.append(str(legend[2][i]) + '-us')
+    plt.title(
+        'The {1}: {2}\nThe {3}: {4}\nThe legend: {0}'.format(
+            str(legend[1]), str(filters[0][1]), str(filters[0][2]), str(filters[1][1]), str(filters[1][2])))
+    # print(converted_legend)
+    if graph == 'line_graph':
+        draw_line(df_pivot, axis, values, converted_legend)
+    elif graph == 'bar_chart':
+        draw_bar(df_pivot, axis, values, converted_legend)
+    plt.savefig(output_directory + '{0}{1}{2}{3}{4}{5}'.format(str(legend[3]), str(axis[3]), str(filters[0][3]),
+                                                               str(filters[1][3]), str(filters[0][2]),
+                                                               str(filters[1][2])) + '.png')
+    plt.cla()
+
+
+def draw_line(df_pivot, axis, values, converted_legend):
+    plt.ylabel(values[1])
+    plt.xlabel(axis[1])
+    line = plt.plot(df_pivot, '-o')
+    plt.legend(handles=line, labels=converted_legend, loc='best')
+
+
+def draw_bar(df_pivot, axis, values, converted_legend):
+    performance = df_pivot.T.values.tolist()
+    # print(df_pivot)
+    # print(performance)
+
+    name_list = axis[2]
+    # print(converted_legend)
+    n = len(name_list)
+    total_width = 1.2
+    # x = list(range(n))
+    x = [0, 1.3, 2.6]
+    l = len(converted_legend)
+    width = total_width / l
+    for i in range(len(performance)):
+        num_list = performance[i]
+        # print(x)
+        plt.bar(x, num_list, width=width, label=converted_legend[i], tick_label=name_list)
+        for j in range(n):
+            x[j] = x[j] + width
+
+    plt.legend()
+
+
+def draw_graph(axis, df, filter0_values, filter1_values, filters, legend, values):
+    process_filters = copy.deepcopy(filters)
+    for x in range(len(filter0_values)):
+        for y in range(len(filter1_values)):
+            process_filters[0][2] = filter0_values[x]
+            process_filters[1][2] = filter1_values[y]
+            draw(df, process_filters, axis, legend, values)
+
+
 def start_draw():
-    df = pd.read_csv(output_directory + 'final20191031102401625627.csv', usecols=[1, 2, 3, 4, 5, 6])
-    # df = pd.read_csv(final_result_path, usecols=[1, 2, 3, 4, 5])
-    # print(df.columns.values)
-    fields = [['no_of_iterations_in_mobile', 'number of iterations in mobile', [1, 10, 15, 25]],
-              ['no_of_iterations_in_server', 'number of iterations in server', [1, 10, 15, 20]],
-              ['return_file_size', 'return file size', [100, 500, 1000, 2000]],
-              ['no_of_interactions', 'number of interactions', [1, 10, 25, 50]],
+    df = pd.read_csv(output_directory + 'final20191031102401625627 (copy).csv', usecols=[1, 2, 3, 4, 5, 6])
+    fields = []
+    # if not mixed:
+    #     fields = [['no_of_iterations_in_mobile', 'number of iterations in mobile', [1, 10, 15, 25], 'm'],
+    #               ['no_of_iterations_in_server', 'number of iterations in server', [1, 10, 15, 20], 's'],
+    #               ['return_file_size', 'return file size', [100, 500, 1000, 2000], 'f'],
+    #               ['no_of_interactions', 'number of interactions', [1, 10, 25, 50], 'i'],
+    #               ['total_time', 'time used'],
+    #               ['cloud', 'cloud']]
+    # else:
+    fields = [['no_of_iterations_in_mobile', 'number of iterations in mobile', [1, 10, 25], 'm'],
+              ['no_of_iterations_in_server', 'number of iterations in server', [1, 10, 20], 's'],
+              ['return_file_size', 'return file size', [100, 1000, 2000], 'f'],
+              ['no_of_interactions', 'number of interactions', [1, 10, 50], 'i'],
               ['total_time', 'time used'],
               ['cloud', 'cloud']]
-    df.columns = [fields[0][0], fields[1][0], fields[2][0], fields[3][0], fields[4][0], fields[5][0]
-                  ]
+    df.columns = [fields[0][0], fields[1][0], fields[2][0], fields[3][0], fields[4][0], fields[5][0]]
     values = [fields[4][0], fields[4][1]]
     filter_list = []
     full_collection = [0, 1, 2, 3]
@@ -155,41 +230,9 @@ def start_draw():
         filters = [fields[filter0_index], fields[filter1_index]]
         filter0_values = fields[filter0_index][2]
         filter1_values = fields[filter1_index][2]
-        axis = [fields[axis_index][0], fields[axis_index][1]]
-        legend = [fields[legend_index][0], fields[legend_index][1], fields[legend_index][2]]
+        axis = [fields[axis_index][0], fields[axis_index][1], fields[axis_index][2], fields[axis_index][3]]
+        legend = [fields[legend_index][0], fields[legend_index][1], fields[legend_index][2], fields[legend_index][3]]
         draw_graph(axis, df, filter0_values, filter1_values, filters, legend, values)
-
-
-def draw(df, filters, axis, legend, values):
-    # print(filters)
-    plt.title(
-        'The legend: {0}\nThe {1}: {2}\nThe {3}: {4}'.format(
-            str(legend[1]), str(filters[0][1]), str(filters[0][2]), str(filters[1][1]), str(filters[1][2])))
-    df_process = df[df[filters[0][0]] == int(filters[0][2])]
-    df_process = df_process[df_process[filters[1][0]] == int(filters[1][2])]
-    df_pivot = pd.pivot_table(df_process, index=[axis[0]], columns=[legend[0], 'cloud'],
-                              values=[values[0]], aggfunc='sum')
-    plt.ylabel(values[1])
-    plt.xlabel(axis[1])
-    line = plt.plot(df_pivot, '-o')
-    converted_legend = []
-    for i in range(len(legend[2])):
-        converted_legend.append(str(legend[2][i]) + '-hk')
-        converted_legend.append(str(legend[2][i]) + '-us')
-    # plt.legend(handles=line, labels=legend[2], loc='best')
-    plt.legend(handles=line, labels=converted_legend, loc='best')
-    plt.savefig(output_directory + filters[0][0] + '_' + str(filters[0][2]) + '_' + filters[1][0] + '_' + str(
-        filters[1][2]) + '_' + 'axis_' + str(axis[0]) + '_legend_' + str(legend[0]) + '.png')
-    plt.cla()
-
-
-def draw_graph(axis, df, filter0_values, filter1_values, filters, legend, values):
-    process_filters = copy.deepcopy(filters)
-    for x in range(len(filter0_values)):
-        for y in range(len(filter1_values)):
-            process_filters[0][2] = filter0_values[x]
-            process_filters[1][2] = filter1_values[y]
-            draw(df, process_filters, axis, legend, values)
 
 
 start = datetime.now()
