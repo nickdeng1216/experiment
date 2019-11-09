@@ -19,6 +19,7 @@ interaction_path = output_directory + 'interaction' + timestamp + '.csv'
 operation_path = output_directory + 'operation' + timestamp + '.csv'
 mean_file_path = output_directory + 'mean' + timestamp + '.csv'
 final_result_path = output_directory + 'final' + timestamp + '.csv'
+gray_color_set = ['black', 'lightgrey', 'darkgrey']
 mixed = True
 graph = 'bar_chart'
 
@@ -130,41 +131,37 @@ def draw(df, filters, axis, legend, values):
     plt.title(
         'The {1}: {2}\nThe {3}: {4}\nThe legend: {0}'.format(
             str(legend[1]), str(filters[0][1]), str(filters[0][2]), str(filters[1][1]), str(filters[1][2])))
+    plt.ylabel(values[1])
+    plt.xlabel(axis[1])
     # print(converted_legend)
     if graph == 'line_graph':
-        draw_line(df_pivot, axis, values, converted_legend)
+        draw_line(df_pivot, converted_legend)
     elif graph == 'bar_chart':
-        draw_bar(df_pivot, axis, values, converted_legend)
+        draw_bar(df_pivot, axis, converted_legend)
     plt.savefig(output_directory + '{0}{1}{2}{3}{4}{5}'.format(str(legend[3]), str(axis[3]), str(filters[0][3]),
                                                                str(filters[1][3]), str(filters[0][2]),
                                                                str(filters[1][2])) + '.png')
     plt.cla()
 
 
-def draw_line(df_pivot, axis, values, converted_legend):
-    plt.ylabel(values[1])
-    plt.xlabel(axis[1])
+def draw_line(df_pivot, converted_legend):
     line = plt.plot(df_pivot, '-o')
     plt.legend(handles=line, labels=converted_legend, loc='best')
 
 
-def draw_bar(df_pivot, axis, values, converted_legend):
+def draw_bar(df_pivot, axis, converted_legend):
     performance = df_pivot.T.values.tolist()
-    # print(df_pivot)
-    # print(performance)
 
     name_list = axis[2]
-    # print(converted_legend)
     n = len(name_list)
     total_width = 1.2
-    # x = list(range(n))
     x = [0, 1.3, 2.6]
     l = len(converted_legend)
     width = total_width / l
     for i in range(len(performance)):
         num_list = performance[i]
-        # print(x)
-        plt.bar(x, num_list, width=width, label=converted_legend[i], tick_label=name_list)
+        plt.bar(x, num_list, width=width, label=converted_legend[i], tick_label=name_list,
+                color=[gray_color_set[i % 2]])
         for j in range(n):
             x[j] = x[j] + width
 
